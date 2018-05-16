@@ -71,16 +71,16 @@ RUN wget ${BASE_URL}hive/hive-${HIVE_VERSION}/apache-hive-${HIVE_VERSION}-bin.ta
     fi)
 
 # install hivemall
-ADD resources/docker/hivemall-core-0.5.0-incubating.jar ${HIVEMALL_PATH}/target/hivemall-core-${HIVEMALL_VERSION}-with-dependencies.jar
-
 RUN mkdir -p /root/bin /root/hivemall && \
     find ${HIVEMALL_PATH}/resources/docker/home/bin -mindepth 1 -maxdepth 1 \
       -exec sh -c 'f={} && ln -s $f /root/bin/${f##*/}' \; && \
     ln -s ${HIVEMALL_PATH}/resources/docker/home/.hiverc /root && \
     ln -s ${HIVEMALL_PATH}/resources/ddl/define-all.hive /root/hivemall/define-all.hive && \
-    ln -s ${HIVEMALL_PATH}/target/hivemall-core-${HIVEMALL_VERSION}-with-dependencies.jar \
-      /root/hivemall/hivemall-core-with-dependencies.jar && \
+    ln -s ${HIVEMALL_PATH}/target/hivemall-all-${HIVEMALL_VERSION}-with-dependencies.jar \
+      /root/hivemall/hivemall-all-with-dependencies.jar && \
     rm -rf /var/cache/apt/archives/* /var/lib/apt/lists/* /root/.m2/* /root/.npm/*
+
+ADD resources/docker/hivemall-all-0.5.0-incubating.jar ${HIVEMALL_PATH}/target/hivemall-all-${HIVEMALL_VERSION}-with-dependencies.jar
 
 VOLUME ["/opt/hivemall/", "/root/data/"]
 EXPOSE 8088 19888 50070

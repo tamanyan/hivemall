@@ -24,7 +24,7 @@ services:
       context: ../../
       dockerfile: resources/docker/Dockerfile
       args:
-        - PREBUILD=true
+        - PREBUILD=false
     image: hivemall
     container_name: hivemall
     ports:
