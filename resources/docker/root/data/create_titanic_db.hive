@@ -1,0 +1,43 @@
+create database titanic;
+use titanic;
+
+drop table train;
+create external table train (
+    passengerid int, -- unique id
+    survived int, -- target label
+    pclass int,
+    name string,
+    sex string,
+    age int,
+    sibsp int, -- Number of Siblings/Spouses Aboard
+    parch int, -- Number of Parents/Children Aboard
+    ticket string,
+    fare double,
+    cabin string,
+    embarked string
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n';
+
+LOAD DATA LOCAL INPATH '/root/data/train.csv' INTO TABLE train;
+
+drop table test_raw;
+create external table test_raw (
+    passengerid int,
+    pclass int,
+    name string,
+    sex string,
+    age int,
+    sibsp int, -- Number of Siblings/Spouses Aboard
+    parch int, -- Number of Parents/Children Aboard
+    ticket string,
+    fare double,
+    cabin string,
+    embarked string
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n';
+
+LOAD DATA LOCAL INPATH '/root/data/test.csv' INTO TABLE test_raw;

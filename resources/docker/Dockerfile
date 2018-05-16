@@ -70,6 +70,9 @@ RUN wget ${BASE_URL}hive/hive-${HIVE_VERSION}/apache-hive-${HIVE_VERSION}-bin.ta
       cd ${HIVEMALL_PATH} && bin/build.sh; \
     fi)
 
+# ADD resources/docker/hive-site.xml ${HIVE_HOME}/conf/hive-site.xml
+# ADD resources/docker/hive-hwi-1.0.jar ${HIVE_HOME}/lib/hive-hwi-1.0.jar
+# ADD resources/docker/hive-hwi-1.0.war ${HIVE_HOME}/lib/hive-hwi-1.0.war
 
 # install hivemall
 RUN mkdir -p /root/bin /root/hivemall && \

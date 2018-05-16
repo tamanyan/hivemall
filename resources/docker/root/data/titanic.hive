@@ -1,0 +1,64 @@
+WITH quantified AS (
+  SELECT
+    QUANTIFY(true,
+      passengerid, survived, pclass, name, sex, age, sibsp, parch, ticket, fare, cabin, embarked
+    ) AS (passengerid, survived, pclass, name, sex, age, sibsp, parch, ticket, fare, cabin, embarked)
+  FROM
+    train
+), vtrain AS (
+  SELECT
+    passengerid,
+    ARRAY(pclass, name, sex, age, sibsp, parch, ticket, fare, cabin, embarked) AS features,
+    survived
+  FROM
+    quantified
+  WHERE
+    passengerid < 800
+), test AS (
+  SELECT
+    passengerid,
+    ARRAY(pclass, name, sex, age, sibsp, parch, ticket, fare, cabin, embarked) AS features,
+    survived AS survived_correct
+  FROM
+    quantified
+  WHERE
+    passengerid >= 800
+), model AS (
+  SELECT
+    TRAIN_RANDOMFOREST_CLASSIFIER(features, survived, "-trees 500 -attrs C,C,C,Q,Q,Q,C,Q,C,C")
+  FROM
+    vtrain
+), predicted_raw AS (
+  SELECT
+    t.passengerid, 
+    p.model_weight,
+    tree_predict(p.model_id, p.model, t.features, "-classification") as predicted
+  FROM
+    model AS p
+    LEFT JOIN test AS t
+), predicted_reduced AS (
+  SELECT
+    passengerid,
+    rf_ensemble(predicted.value, predicted.posteriori, model_weight) as predicted
+  FROM
+    predicted_raw
+  GROUP BY
+    passengerid
+), predicted AS (
+  SELECT
+    passengerid,
+    predicted.label,
+    predicted.probability,
+    predicted.probabilities
+  FROM
+    predicted_reduced
+)
+SELECT
+  t.passengerid,
+  t.survived_correct,
+  p.label AS predict,
+  p.probability,
+  p.probabilities
+FROM
+  predicted AS p
+  INNER JOIN test AS t ON p.passengerid = t.passengerid;

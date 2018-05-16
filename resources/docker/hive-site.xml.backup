@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+
+<configuration>
+
+    <property>
+        <name>javax.jdo.option.ConnectionURL</name>
+        <value>jdbc:mysql://localhost:3306/hive?createDatabaseIfNotExist=true&amp;charset=latin1</value>
+    </property>
+
+    <property>
+        <name>javax.jdo.option.ConnectionDriverName</name>
+        <value>com.mysql.jdbc.Driver</value>
+    </property>
+
+    <property>
+        <name>javax.jdo.option.ConnectionUserName</name>
+        <value>hive</value>
+    </property>
+
+    <property>
+        <name>javax.jdo.option.ConnectionPassword</name>
+        <value>hive</value>
+    </property>
+
+    <property>
+        <name>fs.default.name</name>
+        <value>hdfs://127.0.0.1:9000</value>
+    </property>
+
+    <property>
+        <name>mapred.job.tracker</name>
+        <value>127.0.0.1:9001</value>
+    </property>
+
+    <property>
+        <name>hive.hwi.war.file</name>
+        <value>/lib/hive-hwi-1.0.war</value>
+        <description>This is the WAR file for Hive Web Interface</description>
+    </property>
+
+    <property>
+        <name>hive.hwi.result</name>
+        <value>/user/hive/result</value>
+        <description>this is storage directory for hive sql results</description>
+    </property>
+
+</configuration>
