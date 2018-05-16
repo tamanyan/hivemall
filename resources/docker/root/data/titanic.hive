@@ -25,7 +25,7 @@ WITH quantified AS (
     passengerid >= 800
 ), model AS (
   SELECT
-    TRAIN_RANDOMFOREST_CLASSIFIER(features, survived, "-trees 500 -attrs C,C,C,Q,Q,Q,C,Q,C,C")
+    TRAIN_RANDOMFOREST_CLASSIFIER(features, survived, "-trees 400 -attrs C,C,C,Q,Q,Q,C,Q,C,C")
   FROM
     vtrain
 ), predicted_raw AS (

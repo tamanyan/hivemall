@@ -1,0 +1,40 @@
+WITH quantified AS (
+  SELECT
+    QUANTIFY(true,
+      passengerid, survived, pclass, name, sex, age, sibsp, parch, ticket, fare, cabin, embarked
+    ) AS (passengerid, survived, pclass, name, sex, age, sibsp, parch, ticket, fare, cabin, embarked)
+  FROM
+    train
+), vtrain AS (
+  SELECT
+    passengerid,
+    ARRAY(pclass, name, sex, age, sibsp, parch, ticket, fare, cabin, embarked) AS features,
+    survived
+  FROM
+    quantified
+  WHERE
+    passengerid < 800
+), test AS (
+  SELECT
+    passengerid,
+    ARRAY(pclass, name, sex, age, sibsp, parch, ticket, fare, cabin, embarked) AS features,
+    survived AS survived_correct
+  FROM
+    quantified
+  WHERE
+    passengerid >= 800
+), model AS (
+  select 
+    feature,
+    voted_avg(weight) as weight
+  from
+    (SELECT
+        train_adagrad_rda(add_bias(features),survived) as (feature,weight)
+    FROM
+        vtrain) t
+  group by feature
+)
+SELECT
+  feature,
+  weight
+FROM model;
