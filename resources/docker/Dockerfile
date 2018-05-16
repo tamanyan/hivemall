@@ -26,7 +26,6 @@ ARG HADOOP_VERSION=2.7.6
 ARG HIVE_VERSION=2.1.1
 
 ENV JAVA8_HOME /docker-java-home
-
 ENV HIVEMALL_VERSION=0.5.0
 ENV BASE_URL='https://www.apache.org/dyn/mirrors/mirrors.cgi?action=download&filename='
 ENV HADOOP_HOME='/usr/local/hadoop'
@@ -66,7 +65,6 @@ RUN wget ${BASE_URL}hive/hive-${HIVE_VERSION}/apache-hive-${HIVE_VERSION}-bin.ta
       > ${HIVE_HOME}/conf/hive-site.xml && \
     \
     cd ${HIVEMALL_PATH} && \
-    HIVEMALL_VERSION=`cat VERSION` && \
     \
     (if ${PREBUILD}; then \
       cd ${HIVEMALL_PATH} && bin/build.sh; \
