@@ -17,14 +17,17 @@
 # under the License.
 #
 
-FROM openjdk:7
+FROM openjdk:8
 
 WORKDIR /root/
 
 ARG PREBUILD=true
-ARG HADOOP_VERSION=2.7.3
+ARG HADOOP_VERSION=2.7.6
 ARG HIVE_VERSION=2.1.1
 
+ENV JAVA8_HOME /docker-java-home
+
+ENV HIVEMALL_VERSION=0.5.0
 ENV BASE_URL='https://www.apache.org/dyn/mirrors/mirrors.cgi?action=download&filename='
 ENV HADOOP_HOME='/usr/local/hadoop'
 ENV HIVE_HOME='/usr/local/hive'
@@ -39,11 +42,12 @@ COPY . ${HIVEMALL_PATH}/
 
 RUN set -eux && \
     apt update && \
-    apt install -y --no-install-recommends openssh-server maven g++ make ruby npm && \
-    ln -s /usr/bin/nodejs /usr/bin/node && \
-    npm install -g gitbook-cli && \
-    \
-    wget ${BASE_URL}hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz -O - \
+    curl -sL https://deb.nodesource.com/setup_9.x | bash - && \
+    apt install -y --no-install-recommends openssh-server maven g++ make ruby nodejs && \
+    npm install -g gitbook-cli
+
+# install hadoop
+RUN wget ${BASE_URL}hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz -O - \
       | tar xz && \
     mv hadoop-${HADOOP_VERSION} ${HADOOP_HOME} && \
     sed -i -e 's!${JAVA_HOME}!'"${JAVA_HOME}!" ${HADOOP_HOME}/etc/hadoop/hadoop-env.sh && \
@@ -51,9 +55,10 @@ RUN set -eux && \
     cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys && \
     echo 'host *\n  StrictHostKeyChecking no' > ~/.ssh/config && \
     mv ${HIVEMALL_PATH}/resources/docker/etc/hadoop/*.xml ${HADOOP_HOME}/etc/hadoop && \
-    hdfs namenode -format && \
-    \
-    wget ${BASE_URL}hive/hive-${HIVE_VERSION}/apache-hive-${HIVE_VERSION}-bin.tar.gz -O - \
+    hdfs namenode -format
+
+# install hive
+RUN wget ${BASE_URL}hive/hive-${HIVE_VERSION}/apache-hive-${HIVE_VERSION}-bin.tar.gz -O - \
       | tar xz && \
     mv apache-hive-${HIVE_VERSION}-bin ${HIVE_HOME} && \
     cat ${HIVE_HOME}/conf/hive-default.xml.template \
@@ -65,9 +70,12 @@ RUN set -eux && \
     \
     (if ${PREBUILD}; then \
       cd ${HIVEMALL_PATH} && bin/build.sh; \
-    fi) && \
-    \
-    mkdir -p /root/bin /root/hivemall && \
+    fi)
+
+# install hivemall
+ADD resources/docker/hivemall-core-0.5.0-incubating.jar ${HIVEMALL_PATH}/target/hivemall-core-${HIVEMALL_VERSION}-with-dependencies.jar
+
+RUN mkdir -p /root/bin /root/hivemall && \
     find ${HIVEMALL_PATH}/resources/docker/home/bin -mindepth 1 -maxdepth 1 \
       -exec sh -c 'f={} && ln -s $f /root/bin/${f##*/}' \; && \
     ln -s ${HIVEMALL_PATH}/resources/docker/home/.hiverc /root && \

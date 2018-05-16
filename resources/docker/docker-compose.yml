@@ -31,8 +31,8 @@ services:
       - "8088:8088" # ResourceManager
       - "19888:19888" # JobHistoryServer
       - "50070:50070" # NameNode
-    #volumes:
-      #- "../../:/opt/hivemall/" # mount current hivemall dir
-      #- "/path/to/data/:/root/data/" # mount resources
+    volumes:
+      - "../../:/opt/hivemall/" # mount current hivemall dir
+      - "./root/data/:/root/data" # mount resources
     tty: true
     stdin_open: true
