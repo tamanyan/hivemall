@@ -45,9 +45,11 @@ RUN set -eux && \
     apt install -y --no-install-recommends openssh-server maven g++ make ruby nodejs && \
     npm install -g gitbook-cli
 
+
 # install hadoop
-RUN wget ${BASE_URL}hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz -O - \
-      | tar xz && \
+ADD ${BASE_URL}hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz .
+
+RUN tar xz hadoop-${HADOOP_VERSION}.tar.gz && \
     mv hadoop-${HADOOP_VERSION} ${HADOOP_HOME} && \
     sed -i -e 's!${JAVA_HOME}!'"${JAVA_HOME}!" ${HADOOP_HOME}/etc/hadoop/hadoop-env.sh && \
     ssh-keygen -q -P '' -f ~/.ssh/id_rsa && \
@@ -56,9 +58,14 @@ RUN wget ${BASE_URL}hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSI
     mv ${HIVEMALL_PATH}/resources/docker/etc/hadoop/*.xml ${HADOOP_HOME}/etc/hadoop && \
     hdfs namenode -format
 
+# tez
+COPY resources/docker/tez-0.9.1.tar.gz ${HIVEMALL_PATH}/tez-0.9.1.tar.gz
+ADD resources/docker/tez-site.xml ${HADOOP_HOME}/etc/hadoop/tez-site.xml
+
 # install hive
-RUN wget ${BASE_URL}hive/hive-${HIVE_VERSION}/apache-hive-${HIVE_VERSION}-bin.tar.gz -O - \
-      | tar xz && \
+ADD ${BASE_URL}hive/hive-${HIVE_VERSION}/apache-hive-${HIVE_VERSION}-bin.tar.gz .
+
+RUN tar xz apache-hive-${HIVE_VERSION}-bin.tar.gz && \
     mv apache-hive-${HIVE_VERSION}-bin ${HIVE_HOME} && \
     cat ${HIVE_HOME}/conf/hive-default.xml.template \
       | sed -e 's!databaseName=metastore_db!databaseName=/root/metastore_db!' \
