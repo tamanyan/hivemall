@@ -39,6 +39,18 @@ ENV PATH="${HADOOP_HOME}/bin:${HIVE_HOME}/bin:${PATH}"
 
 COPY . ${HIVEMALL_PATH}/
 
+COPY resources/docker/tez-0.9.1.tar.gz ${HIVEMALL_PATH}/tez-0.9.1.tar.gz
+ADD resources/docker/tez-site.xml ${HADOOP_HOME}/etc/hadoop/tez-site.xml
+RUN mkdir -p ${HIVEMALL_PATH}/tez-0.9.1
+RUN tar xvzf ${HIVEMALL_PATH}/tez-0.9.1.tar.gz -C ${HIVEMALL_PATH}/tez-0.9.1
+
+# environment settings
+ENV TEZ_DIST ${HIVEMALL_PATH}/tez-0.9.1
+RUN echo 'TEZ_JARS=${TEZ_DIST}/*' >> ${HADOOP_HOME}/etc/hadoop/hadoop-env.sh
+RUN echo 'TEZ_LIB=${TEZ_DIST}/lib/*' >> ${HADOOP_HOME}/etc/hadoop/hadoop-env.sh
+RUN echo 'TEZ_CONF=${HADOOP_HOME}/etc/hadoop' >> ${HADOOP_HOME}/etc/hadoop/hadoop-env.sh
+RUN echo 'export HADOOP_CLASSPATH=$HADOOP_CLASSPATH:$TEZ_CONF:$TEZ_JARS:$TEZ_LIB' >> ${HADOOP_HOME}/etc/hadoop/hadoop-env.sh
+
 RUN set -eux && \
     apt update && \
     curl -sL https://deb.nodesource.com/setup_9.x | bash - && \
@@ -46,6 +58,7 @@ RUN set -eux && \
     npm install -g gitbook-cli
 
 # install hadoop
+
 RUN wget ${BASE_URL}hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz -O - \
       | tar xz && \
     mv hadoop-${HADOOP_VERSION} ${HADOOP_HOME} && \
@@ -53,8 +66,9 @@ RUN wget ${BASE_URL}hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSI
     ssh-keygen -q -P '' -f ~/.ssh/id_rsa && \
     cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys && \
     echo 'host *\n  StrictHostKeyChecking no' > ~/.ssh/config && \
-    mv ${HIVEMALL_PATH}/resources/docker/etc/hadoop/*.xml ${HADOOP_HOME}/etc/hadoop && \
-    hdfs namenode -format
+    mv ${HIVEMALL_PATH}/resources/docker/etc/hadoop/*.xml ${HADOOP_HOME}/etc/hadoop
+
+ RUN hdfs namenode -format && hdfs dfs -put ${TEZ_DIST} /tez/
 
 # install hive
 RUN wget ${BASE_URL}hive/hive-${HIVE_VERSION}/apache-hive-${HIVE_VERSION}-bin.tar.gz -O - \
@@ -70,7 +84,8 @@ RUN wget ${BASE_URL}hive/hive-${HIVE_VERSION}/apache-hive-${HIVE_VERSION}-bin.ta
       cd ${HIVEMALL_PATH} && bin/build.sh; \
     fi)
 
-# ADD resources/docker/hive-site.xml ${HIVE_HOME}/conf/hive-site.xml
+ADD resources/docker/tez-site.xml ${HIVE_HOME}/conf/tez-site.xml
+
 # ADD resources/docker/hive-hwi-1.0.jar ${HIVE_HOME}/lib/hive-hwi-1.0.jar
 # ADD resources/docker/hive-hwi-1.0.war ${HIVE_HOME}/lib/hive-hwi-1.0.war
 

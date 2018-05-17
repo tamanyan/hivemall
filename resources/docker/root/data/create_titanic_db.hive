@@ -1,8 +1,8 @@
 create database titanic;
 use titanic;
 
-drop table train;
-create external table train (
+drop table titanic;
+create external table titanic (
     passengerid int, -- unique id
     survived int, -- target label
     pclass int,
@@ -16,11 +16,14 @@ create external table train (
     cabin string,
     embarked string
 )
-ROW FORMAT DELIMITED
-FIELDS TERMINATED BY ','
-LINES TERMINATED BY '\n';
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
+WITH SERDEPROPERTIES (
+   "separatorChar" = ",",
+   "quoteChar"     = "\""
+)
+TBLPROPERTIES ("skip.header.line.count"="1");
 
-LOAD DATA LOCAL INPATH '/root/data/train.csv' INTO TABLE train;
+LOAD DATA LOCAL INPATH '/root/data/train.csv' INTO TABLE titanic;
 
 drop table test_raw;
 create external table test_raw (
@@ -36,8 +39,11 @@ create external table test_raw (
     cabin string,
     embarked string
 )
-ROW FORMAT DELIMITED
-FIELDS TERMINATED BY ','
-LINES TERMINATED BY '\n';
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
+WITH SERDEPROPERTIES (
+   "separatorChar" = ",",
+   "quoteChar"     = "\""
+)
+TBLPROPERTIES ("skip.header.line.count"="1");;
 
 LOAD DATA LOCAL INPATH '/root/data/test.csv' INTO TABLE test_raw;

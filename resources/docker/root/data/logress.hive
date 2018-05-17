@@ -1,40 +1,54 @@
-WITH quantified AS (
-  SELECT
-    QUANTIFY(true,
-      passengerid, survived, pclass, name, sex, age, sibsp, parch, ticket, fare, cabin, embarked
-    ) AS (passengerid, survived, pclass, name, sex, age, sibsp, parch, ticket, fare, cabin, embarked)
-  FROM
-    train
-), vtrain AS (
-  SELECT
-    passengerid,
-    ARRAY(pclass, name, sex, age, sibsp, parch, ticket, fare, cabin, embarked) AS features,
-    survived
-  FROM
-    quantified
-  WHERE
+with train as (
+  select
+    add_bias(
+      array_concat(
+        quantitative_features(
+          array("age", "fare", "sibsp", "parch"),
+          age, fare, sibsp, parch
+        ),
+        categorical_features(
+          array("pclass", "sex"),
+          pclass, sex
+        )
+      )
+    ) as features,
+    survived as label
+  from
+    titanic
+  where
     passengerid < 800
-), test AS (
-  SELECT
-    passengerid,
-    ARRAY(pclass, name, sex, age, sibsp, parch, ticket, fare, cabin, embarked) AS features,
-    survived AS survived_correct
-  FROM
-    quantified
+), test as (
+  select 
+    add_bias(
+      array_concat(
+        quantitative_features(
+          array("age", "fare", "sibsp", "parch"),
+          age, fare, sibsp, parch
+        ),
+        categorical_features(
+          array("pclass", "sex"),
+          pclass, sex
+        )
+      )
+    ) as features,
+    survived as correct_label
+  from
+    titanic
   WHERE
     passengerid >= 800
-), model AS (
-  select 
-    feature,
-    voted_avg(weight) as weight
+), tmp_model as (
+  select
+    logress(features, label) as (feature, weight)
   from
-    (SELECT
-        train_adagrad_rda(add_bias(features),survived) as (feature,weight)
-    FROM
-        vtrain) t
+    train
+), model as (
+  select
+    feature,
+    avg(weight) as weight
+  from tmp_model
   group by feature
 )
-SELECT
-  feature,
-  weight
-FROM model;
+select
+ feature,
+ weight
+from model;

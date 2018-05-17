@@ -1,2 +1,3 @@
 add jar /root/hivemall/hivemall-all-with-dependencies.jar;
 source /root/hivemall/define-all.hive;
+set hive.cli.print.header=true

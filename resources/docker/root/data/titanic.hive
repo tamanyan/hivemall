@@ -4,8 +4,8 @@ WITH quantified AS (
       passengerid, survived, pclass, name, sex, age, sibsp, parch, ticket, fare, cabin, embarked
     ) AS (passengerid, survived, pclass, name, sex, age, sibsp, parch, ticket, fare, cabin, embarked)
   FROM
-    train
-), vtrain AS (
+    titanic
+), train AS (
   SELECT
     passengerid,
     ARRAY(pclass, name, sex, age, sibsp, parch, ticket, fare, cabin, embarked) AS features,
@@ -27,7 +27,7 @@ WITH quantified AS (
   SELECT
     TRAIN_RANDOMFOREST_CLASSIFIER(features, survived, "-trees 400 -attrs C,C,C,Q,Q,Q,C,Q,C,C")
   FROM
-    vtrain
+    train
 ), predicted_raw AS (
   SELECT
     t.passengerid, 
